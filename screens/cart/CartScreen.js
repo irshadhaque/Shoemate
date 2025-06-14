@@ -1,5 +1,13 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import { CartContext } from '../../context/CartContext';
 
 const CartScreen = () => {
@@ -27,7 +35,7 @@ const CartScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
       {message !== '' && (
         <View style={styles.toast}>
           <Text style={styles.toastText}>{message}</Text>
@@ -35,23 +43,33 @@ const CartScreen = () => {
       )}
 
       {cart.length === 0 ? (
-        <Text style={{ padding: 20 }}>Your cart is empty</Text>
+        <Text style={styles.emptyText}>🛒 Your cart is empty</Text>
       ) : (
         <>
           <FlatList
             data={cart}
             keyExtractor={(item) => item.id.toString()}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-            contentContainerStyle={{ padding: 10 }}
+            contentContainerStyle={{ padding: 12 }}
             renderItem={({ item }) => (
               <View style={styles.card}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.price}>${item.price} x {item.quantity}</Text>
-                <Button title="Remove" onPress={() => handleRemove(item.id)} />
+                <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+                <View style={styles.details}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.price}>
+                    ₹{item.price} x {item.quantity}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemove(item.id)}
+                  >
+                    <Text style={styles.removeButtonText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           />
-          <Text style={styles.total}>Total: ${getTotalPrice()}</Text>
+          <Text style={styles.total}>Total: ₹{getTotalPrice()}</Text>
         </>
       )}
     </View>
@@ -77,26 +95,59 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    marginBottom: 15,
+    flexDirection: 'row',
+    marginBottom: 16,
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 12,
     borderRadius: 10,
     elevation: 3,
+    alignItems: 'center',
+  },
+  thumbnail: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  details: {
+    flex: 1,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 4,
   },
   price: {
+    fontSize: 14,
     color: '#009688',
     marginBottom: 8,
   },
+  removeButton: {
+    backgroundColor: '#ff4d4d',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   total: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     padding: 16,
-    textAlign: 'right',
-    backgroundColor: '#f1f1f1',
+    textAlign: 'left',
+    backgroundColor: '#fff',
+    elevation: 6,
+    marginTop: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    padding: 40,
+    color: '#777',
   },
 });
 

@@ -27,7 +27,7 @@ export default WelcomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0f7fa', // light teal background
+    backgroundColor: '#ffffff', // light teal background
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,

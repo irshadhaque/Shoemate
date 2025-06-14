@@ -3,22 +3,22 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Image,
   StyleSheet,
-  Switch,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemeContext } from '../../context/ThemeContext';
 import { AuthContext } from '../../context/AuthContext';
-import { AntDesign } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen = () => {
-  const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
   const { logout } = useContext(AuthContext);
+  const navigation = useNavigation();
 
   const [imageUri, setImageUri] = useState(null);
   const [fields, setFields] = useState({
@@ -56,6 +56,14 @@ const ProfileScreen = () => {
       }
     };
     loadData();
+
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 15 }}>
+          <Feather name="more-vertical" size={24} color="#000" />
+        </TouchableOpacity>
+      ),
+    });
   }, []);
 
   const saveFieldChanges = async () => {
@@ -93,8 +101,9 @@ const ProfileScreen = () => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logged out', 'You have been successfully logged out.', [
-      { text: 'OK', onPress: () => logout() },
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: () => logout() },
     ]);
   };
 
@@ -109,136 +118,121 @@ const ProfileScreen = () => {
     setFields((prev) => ({ ...prev, [field]: value }));
   };
 
-  const themeColors = {
-    bg: isDarkMode ? '#121212' : '#f9f9f9',
-    text: isDarkMode ? '#fff' : '#222',
-    border: isDarkMode ? '#555' : '#ccc',
-    placeholder: isDarkMode ? '#aaa' : '#888',
-    inputBg: isDarkMode ? '#1f1f1f' : '#fff',
-  };
-
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.bg }]}>
-      <TouchableOpacity onPress={pickImage}>
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={{ color: '#888' }}>Pick Image</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
+      <LinearGradient
+        colors={["#8e0000", "#c62828", "#e53935", "#ef5350", "#ff8a80"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
+        <View style={styles.imageWrapper}>
+          <Image
+            source={imageUri ? { uri: imageUri } : require('../../assets/user.png')}
+            style={styles.profileImage}
+          />
+          <TouchableOpacity style={styles.imageEditIcon} onPress={pickImage}>
+            <Ionicons name="create-outline" size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.nameText}>{fields.name}</Text>
+      </LinearGradient>
 
       {['name', 'email', 'mobile', 'password'].map((field) => (
-        <View key={field} style={[styles.inputRow, { borderColor: themeColors.border }]}>
-          <TextInput
-            value={fields[field]}
-            editable={editableFields[field]}
-            secureTextEntry={field === 'password'}
-            onChangeText={(text) => handleChange(field, text)}
-            style={[
-              styles.input,
-              {
-                color: themeColors.text,
-                backgroundColor: themeColors.inputBg,
-              },
-            ]}
-            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-            placeholderTextColor={themeColors.placeholder}
-          />
-          <TouchableOpacity onPress={() => toggleEdit(field)} style={styles.editIcon}>
-            <AntDesign name="edit" size={20} color="#007AFF" />
-          </TouchableOpacity>
+        <View key={field} style={styles.inputBlock}>
+          <Text style={styles.label}>{field.toUpperCase()}</Text>
+          <View style={styles.inputRow}>
+            <TextInput
+              value={fields[field]}
+              editable={editableFields[field]}
+              secureTextEntry={field === 'password'}
+              onChangeText={(text) => handleChange(field, text)}
+              style={styles.input}
+              placeholderTextColor="#888"
+            />
+            <TouchableOpacity onPress={() => toggleEdit(field)}>
+              <Ionicons name="create-outline" size={22} color="#e53935" />
+            </TouchableOpacity>
+          </View>
         </View>
       ))}
 
       <TouchableOpacity style={styles.saveBtn} onPress={saveFieldChanges}>
-        <Text style={styles.saveBtnText}>Save Changes</Text>
+        <Text style={styles.saveBtnText}>Save</Text>
       </TouchableOpacity>
-
-      <View style={styles.row}>
-        <Text style={[styles.label, { color: themeColors.text }]}>Dark Mode</Text>
-        <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
-      </View>
-
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
-    padding: 25,
+    paddingBottom: 30,
   },
-  image: {
-    height: 120,
-    width: 120,
-    borderRadius: 60,
-    marginBottom: 25,
-  },
-  imagePlaceholder: {
-    height: 120,
-    width: 120,
-    borderRadius: 60,
-    backgroundColor: '#ddd',
-    justifyContent: 'center',
+  header: {
+    width: '100%',
     alignItems: 'center',
-    marginBottom: 25,
+    paddingVertical: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginBottom: 10,
+  },
+  profileImage: {
+    height: 100,
+    width: 100,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  imageEditIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#e53935',
+    borderRadius: 20,
+    padding: 5,
+    elevation: 5,
+  },
+  nameText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  inputBlock: {
+    width: '85%',
+    marginVertical: 10,
+  },
+  label: {
+    fontSize: 12,
+    color: '#777',
+    marginBottom: 4,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    marginVertical: 8,
-    width: '100%',
-    height: 50,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingBottom: 4,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 6,
-  },
-  editIcon: {
-    marginLeft: 10,
+    color: '#222',
   },
   saveBtn: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#e53935',
     paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingHorizontal: 50,
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: 25,
   },
   saveBtnText: {
     color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 25,
-    justifyContent: 'space-between',
-    width: '60%',
-  },
-  label: {
-    fontSize: 16,
-  },
-  logoutBtn: {
-    backgroundColor: '#e63946',
-    paddingVertical: 10,
-    paddingHorizontal: 35,
-    borderRadius: 10,
-  },
-  logoutText: {
-    color: '#fff',
     fontWeight: 'bold',
-    fontSize: 15,
   },
 });
 

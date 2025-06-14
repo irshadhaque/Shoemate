@@ -8,7 +8,6 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Button,
 } from 'react-native';
 import { CartContext } from '../../context/CartContext';
 
@@ -48,7 +47,7 @@ const ProductDetail = ({ route, navigation }) => {
     >
       <Image source={{ uri: item.thumbnail }} style={styles.recommendImage} />
       <Text numberOfLines={1} style={styles.recommendTitle}>{item.title}</Text>
-      <Text style={styles.recommendPrice}>${item.price}</Text>
+      <Text style={styles.recommendPrice}>₹{item.price}</Text>
     </TouchableOpacity>
   );
 
@@ -60,23 +59,34 @@ const ProductDetail = ({ route, navigation }) => {
         </View>
       )}
 
-      <Image source={{ uri: product.thumbnail }} style={styles.image} />
-      <Text style={styles.title}>{product.title}</Text>
-      <Text style={styles.category}>Category: {product.category}</Text>
-      <Text style={styles.description}>{product.description}</Text>
-      <Text style={styles.price}>Price: Rs.{product.price}</Text>
-      <Text style={styles.discount}>Discount: {product.discountPercentage}%</Text>
-      <Text style={styles.rating}>Rating: ⭐ {product.rating}</Text>
-      <View style={styles.buttonWrapper}>
-        <Button
-          title="Add to Cart"
+      <View style={styles.card}>
+        <Image source={{ uri: product.thumbnail }} style={styles.image} />
+
+        <Text style={styles.title}>{product.title}</Text>
+        <Text style={styles.category}>Category: {product.category}</Text>
+
+        <Text style={styles.description}>{product.description}</Text>
+
+        <View style={styles.row}>
+          <Text style={styles.price}>₹{product.price}</Text>
+          <Text style={styles.discount}>-{product.discountPercentage}%</Text>
+        </View>
+
+        <Text style={styles.rating}>⭐ {product.rating} / 5</Text>
+
+        <TouchableOpacity
+          style={styles.cartButton}
           onPress={() => {
             dispatch({ type: 'ADD_TO_CART', payload: product });
             showMessage('Added to cart');
           }}
-        />
+        >
+          <Text style={styles.cartButtonText}>Add to Cart</Text>
+        </TouchableOpacity>
       </View>
+
       <Text style={styles.recommendHeading}>You may also like</Text>
+
       {loading ? (
         <ActivityIndicator size="small" />
       ) : (
@@ -95,58 +105,85 @@ const ProductDetail = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  card: {
     backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 4,
   },
   image: {
     height: 250,
     width: '100%',
     borderRadius: 10,
-    marginBottom: 20,
+    marginBottom: 15,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#333',
   },
   category: {
-    fontSize: 16,
+    fontSize: 15,
     fontStyle: 'italic',
-    marginVertical: 6,
+    color: '#888',
+    marginBottom: 10,
   },
   description: {
-    fontSize: 16,
-    marginVertical: 10,
+    fontSize: 15,
+    color: '#444',
+    marginBottom: 10,
   },
   price: {
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#009688',
-    marginTop: 10,
   },
   discount: {
     fontSize: 16,
-    color: 'red',
-    marginTop: 5,
+    color: '#d32f2f',
+    marginLeft: 10,
+    fontWeight: 'bold',
   },
   rating: {
-    fontSize: 16,
-    marginTop: 5,
+    fontSize: 15,
     color: '#555',
+    marginTop: 10,
   },
-  buttonWrapper: {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  cartButton: {
+    backgroundColor: '#d32f2f',
+    paddingVertical: 12,
+    borderRadius: 8,
     marginTop: 20,
-    marginBottom: 20,
+  },
+  cartButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   recommendHeading: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#333',
   },
   recommendCard: {
     width: 140,
     marginRight: 15,
     borderRadius: 10,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
     padding: 10,
     alignItems: 'center',
+    elevation: 3,
   },
   recommendImage: {
     width: 100,
@@ -155,13 +192,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   recommendTitle: {
-    marginTop: 5,
+    marginTop: 6,
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
+    color: '#333',
   },
   recommendPrice: {
     fontSize: 14,
     color: '#009688',
+    marginTop: 4,
+    fontWeight: 'bold',
   },
   toast: {
     backgroundColor: '#28a745',
